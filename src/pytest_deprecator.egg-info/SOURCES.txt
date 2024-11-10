@@ -1,0 +1,9 @@
+pyproject.toml
+src/pytest_deprecator/__init__.py
+src/pytest_deprecator/plugin.py
+src/pytest_deprecator.egg-info/PKG-INFO
+src/pytest_deprecator.egg-info/SOURCES.txt
+src/pytest_deprecator.egg-info/dependency_links.txt
+src/pytest_deprecator.egg-info/entry_points.txt
+src/pytest_deprecator.egg-info/requires.txt
+src/pytest_deprecator.egg-info/top_level.txt

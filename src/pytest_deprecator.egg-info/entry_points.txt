@@ -1,0 +1,2 @@
+[pytest11]
+deprecator-pytest = pytest_deprecator.plugin
