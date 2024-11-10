@@ -1,12 +1,30 @@
+from dataclasses import dataclass, field
+import warnings
+from typing import Literal
+
 import pytest
 
 
+@dataclass
+class DeprecatorReport:
+    warnings: dict = field(default_factory=dict)
+    total_count: int = 0
+
+
+
 class Deprecator:
+    def __init__(self, *args, **kwargs):
+        self.report = DeprecatorReport()
+
     def pytest_sessionstart(self, session):
         print("START")
 
     def pytest_sessionfinish(self, session, exitstatus):
-        print("FINISH")
+        print("FINISHED")
+        print("Report Deprecations")
+        for warning_name, warning_data in self.report.warnings.items():
+            print(f"{warning_name}: Had {warning_data['count']} occurances")
+        print("End Report")
 
     def pytest_terminal_summary(self, terminalreporter):
         terminalreporter.write("Oh Hello!")
@@ -42,6 +60,22 @@ class Deprecator:
     @pytest.hookimpl()
     def pytest_runtest_makereport(self, *args, **kwargs):
         print("RUN MAKEREPORT")
+
+    @pytest.hookimpl()
+    def pytest_warning_recorded(self,
+        warning_message: warnings.WarningMessage,
+        when: Literal["config", "collect", "runtest"],
+        nodeid: str,
+        location: tuple[str, int, str] | None):
+        if warning_message.category == DeprecationWarning:
+            warning_name = warning_message.message.args[0]
+
+            if not self.report.warnings.get(warning_name):
+                self.report.warnings[warning_name] = {
+                    'count': 1
+                }
+            else:
+                self.report.warnings[warning_name]['count'] += 1
 
 
 def pytest_addoption(parser):
