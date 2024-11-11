@@ -80,6 +80,9 @@ class Deprecator:
         terminalreporter.section(title, sep='=', **terminal_kwargs)
 
         content = []
+        if self.report.warnings == {}:
+            terminalreporter.line("No warnings to report on. Use deprecator_warnings in pyproject.toml for configure some", green=True)
+
         for warning_name, warning_data in self.report.warnings.items():
             # content.append(f"{warning_name}: Had {warning_data['count']} occurances")
             message = f"{warning_name}: {BOLD}Had {warning_data['count']} occurances{END}"
@@ -128,6 +131,9 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
+    if not config.getoption('use_deprecate'):
+        return
+
     ini_config = config.inicfg.get('deprecator_warnings', [])
     warning_dict = {}
     for warning_config in ini_config:
