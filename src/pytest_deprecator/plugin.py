@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 import warnings
 from typing import Literal
@@ -11,55 +12,72 @@ class DeprecatorReport:
     total_count: int = 0
 
 
-
 class Deprecator:
-    def __init__(self, *args, **kwargs):
-        self.report = DeprecatorReport()
-
     def pytest_sessionstart(self, session):
-        print("START")
+        self.report = DeprecatorReport()
+        self.session_failed = False
+        self.allowed_warnings = 7
 
     def pytest_sessionfinish(self, session, exitstatus):
-        print("FINISHED")
-        print("Report Deprecations")
+        #import ipdb
+        #ipdb.set_trace()
         for warning_name, warning_data in self.report.warnings.items():
-            print(f"{warning_name}: Had {warning_data['count']} occurances")
-        print("End Report")
+            count = warning_data['count']
+
+            if count > self.allowed_warnings:
+               session.exitstatus = 101 
+               session.config.stash[pytest.StashKey["bool"]()] = True
+               self.session_failed = True
 
     def pytest_terminal_summary(self, terminalreporter):
-        terminalreporter.write("Oh Hello!")
+        terminalreporter.ensure_newline()
+        title = 'deprecations report summary'
+        terminal_kwargs = {'bold': True}
+        if self.session_failed:
+            title += ' (failed)'
+            terminal_kwargs['red'] = True
+        else:
+            title += ' (passed)'
+            terminal_kwargs['green'] = True
+        terminalreporter.section(title, sep='=', **terminal_kwargs)
 
-    @pytest.hookimpl()
-    def pytest_runtestloop(self, *args, **kwargs):
-        print("RUN TESTLOOP")
+        content = []
+        for warning_name, warning_data in self.report.warnings.items():
+            content.append(f"{warning_name}: Had {warning_data['count']} occurances")
 
-    @pytest.hookimpl()
-    def pytest_runtest_protocol(self, *args, **kwargs):
-        print("RUN PROTOCOL")
+        terminalreporter.line(os.linesep.join(content))
 
-    @pytest.hookimpl()
-    def pytest_runtest_logstart(self, *args, **kwargs):
-        print("RUN LOGSTART")
-
-    @pytest.hookimpl()
-    def pytest_runtest_logfinish(self, *args, **kwargs):
-        print("RUN LOGFINISH")
-
-    @pytest.hookimpl()
-    def pytest_runtest_setup(self, *args, **kwargs):
-        print("RUN SETUP")
-
-    @pytest.hookimpl()
-    def pytest_runtest_call(self, *args, **kwargs):
-        print("RUN CALL")
-
-    @pytest.hookimpl()
-    def pytest_runtest_teardown(self, *args, **kwargs):
-        print("RUN TEARDOWN")
-
-    @pytest.hookimpl()
-    def pytest_runtest_makereport(self, *args, **kwargs):
-        print("RUN MAKEREPORT")
+#    @pytest.hookimpl()
+#    def pytest_runtestloop(self, *args, **kwargs):
+#        print("RUN TESTLOOP")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_protocol(self, *args, **kwargs):
+#        print("RUN PROTOCOL")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_logstart(self, *args, **kwargs):
+#        print("RUN LOGSTART")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_logfinish(self, *args, **kwargs):
+#        print("RUN LOGFINISH")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_setup(self, *args, **kwargs):
+#        print("RUN SETUP")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_call(self, *args, **kwargs):
+#        print("RUN CALL")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_teardown(self, *args, **kwargs):
+#        print("RUN TEARDOWN")
+#
+#    @pytest.hookimpl()
+#    def pytest_runtest_makereport(self, *args, **kwargs):
+#        print("RUN MAKEREPORT")
 
     @pytest.hookimpl()
     def pytest_warning_recorded(self,

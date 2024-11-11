@@ -19,7 +19,7 @@ def test_me3():
 
 def test_me4():
     warnings.warn("Oh no! I am deprecated!", DeprecationWarning, stacklevel=2)
-    assert True == False
+    assert True 
 
 def test_me5():
     warnings.warn("Oh no! I am deprecated!", DeprecationWarning, stacklevel=2)
