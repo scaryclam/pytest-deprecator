@@ -13,19 +13,21 @@ class DeprecatorReport:
 
 
 class Deprecator:
+    report = None
+
     def pytest_sessionstart(self, session):
+        #import ipdb
+        #ipdb.set_trace()
         self.report = DeprecatorReport()
         self.session_failed = False
         self.allowed_warnings = 7
 
     def pytest_sessionfinish(self, session, exitstatus):
-        #import ipdb
-        #ipdb.set_trace()
         for warning_name, warning_data in self.report.warnings.items():
             count = warning_data['count']
 
             if count > self.allowed_warnings:
-               session.exitstatus = 101 
+               session.exitstatus = 101
                session.config.stash[pytest.StashKey["bool"]()] = True
                self.session_failed = True
 
@@ -47,38 +49,6 @@ class Deprecator:
 
         terminalreporter.line(os.linesep.join(content))
 
-#    @pytest.hookimpl()
-#    def pytest_runtestloop(self, *args, **kwargs):
-#        print("RUN TESTLOOP")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_protocol(self, *args, **kwargs):
-#        print("RUN PROTOCOL")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_logstart(self, *args, **kwargs):
-#        print("RUN LOGSTART")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_logfinish(self, *args, **kwargs):
-#        print("RUN LOGFINISH")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_setup(self, *args, **kwargs):
-#        print("RUN SETUP")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_call(self, *args, **kwargs):
-#        print("RUN CALL")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_teardown(self, *args, **kwargs):
-#        print("RUN TEARDOWN")
-#
-#    @pytest.hookimpl()
-#    def pytest_runtest_makereport(self, *args, **kwargs):
-#        print("RUN MAKEREPORT")
-
     @pytest.hookimpl()
     def pytest_warning_recorded(self,
         warning_message: warnings.WarningMessage,
@@ -87,6 +57,9 @@ class Deprecator:
         location: tuple[str, int, str] | None):
         if warning_message.category == DeprecationWarning:
             warning_name = warning_message.message.args[0]
+
+            if self.report is None:
+                return
 
             if not self.report.warnings.get(warning_name):
                 self.report.warnings[warning_name] = {
@@ -104,13 +77,6 @@ def pytest_addoption(parser):
         help='Whether to use depreactor or not'
     )
 
-    # parser.addini('HELLO', 'Dummy pytest.ini setting')
-
 
 def pytest_configure(config):
     config.pluginmanager.register(Deprecator())
-
-
-@pytest.fixture
-def fake_warning():
-    print("OK")
