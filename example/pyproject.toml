@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+deprecator_warnings = [
+    # Format is `message regex:allowed occurances`
+    'I am an explicit warning:7',
+    'Oh no! I am deprecated!:8',
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "once:I am an explicit warning:DeprecationWarning:",
+]
