@@ -1,3 +1,4 @@
+import re
 import os
 from dataclasses import dataclass, field
 import warnings
@@ -12,21 +13,40 @@ class DeprecatorReport:
     total_count: int = 0
 
 
+@dataclass
+class DeprecatorConfig:
+    warning_configs: dict = field(default_factory=dict)
+
+
 class Deprecator:
     report = None
+    config = None
+
+    def __init__(self, config):
+        self.config = config
 
     def pytest_sessionstart(self, session):
-        #import ipdb
-        #ipdb.set_trace()
         self.report = DeprecatorReport()
         self.session_failed = False
-        self.allowed_warnings = 7
+        self.allowed_warnings = self.config.warning_configs
 
     def pytest_sessionfinish(self, session, exitstatus):
         for warning_name, warning_data in self.report.warnings.items():
-            count = warning_data['count']
+            allowed_warnings = 0
+            skip_warning = True
 
-            if count > self.allowed_warnings:
+            count = warning_data['count']
+            #import ipdb
+            #ipdb.set_trace()
+
+            for warning_regex, allowed_number in self.config.warning_configs.items():
+                result = re.search(warning_regex, warning_name)
+                if result:
+                    skip_warning = False
+                    allowed_warnings = allowed_number
+                    break
+
+            if not skip_warning and count > allowed_warnings:
                session.exitstatus = 101
                session.config.stash[pytest.StashKey["bool"]()] = True
                self.session_failed = True
@@ -74,9 +94,17 @@ def pytest_addoption(parser):
     group.addoption(
         '--use-deprecate',
         action='store_true',
-        help='Whether to use depreactor or not'
+        help='Whether to use deprecator or not'
     )
 
 
 def pytest_configure(config):
-    config.pluginmanager.register(Deprecator())
+    ini_config = config.inicfg.get('deprecator_warnings', [])
+    warning_dict = {}
+    for warning_config in ini_config:
+        allowed = int(warning_config.split(':')[-1])
+        name = warning_config.split(':')[0]
+        warning_dict[name] = allowed
+
+    deprecator_config = DeprecatorConfig(warning_configs=warning_dict)
+    config.pluginmanager.register(Deprecator(deprecator_config))
