@@ -49,6 +49,9 @@ class Deprecator:
 
             # Don't fail the session on a warning we just want to see in the reporting
             if action == 'error':
+                if allowed_warnings is None:
+                    allowed_warnings = 0
+
                 if count > allowed_warnings:
                     session.exitstatus = 101
                     session.config.stash[pytest.StashKey["bool"]()] = True
@@ -137,9 +140,13 @@ def pytest_configure(config):
     ini_config = config.inicfg.get('deprecator_warnings', [])
     warning_dict = {}
     for warning_config in ini_config:
-        allowed = int(warning_config.split(':')[-1])
         action = warning_config.split(':')[0]
         name = warning_config.split(':')[1]
+        allowed_str = warning_config.split(':')[-1]
+        if allowed_str:
+            allowed = int(allowed_str)
+        else:
+            allowed = None
         warning_dict[name] = {'allowed_number': allowed, "action": action}
 
     deprecator_config = DeprecatorConfig(warning_configs=warning_dict)
