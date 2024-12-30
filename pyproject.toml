@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-deprecator"
-description = "A simple plugin to use with pytest"
+description = "A pytest plugin to aid in incremental refactoring. Allows a setting to be added tp pyproject.toml so specify an acceptable number of a DeprecationWarning"
 version = "0.0.3"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
@@ -27,6 +27,6 @@ classifiers = [
 ]
 dependencies = ["pytest>=6.2.0"]
 [project.urls]
-Repository = "https://github.com/scaryclam/pytest-deprecator-pytest"
+Repository = "https://github.com/scaryclam/pytest-deprecator"
 [project.entry-points.pytest11]
 deprecator-pytest = "pytest_deprecator.plugin"
