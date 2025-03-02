@@ -1,6 +1,6 @@
 [tool.pytest.ini_options]
 deprecator_warnings = [
-    # Format is `message regex:allowed occurances`
+    # Format is `message regex:allowed occurrences`
     'error:I am an explicit warning:7',
     'error:Oh no! I am deprecated!:8',
 ]
