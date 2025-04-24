@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pytest-deprecator
-Version: 0.0.2
+Version: 0.0.3
 Summary: A simple plugin to use with pytest
 Project-URL: Repository, https://github.com/scaryclam/pytest-deprecator-pytest
 Classifier: Framework :: Pytest
